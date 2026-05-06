@@ -2578,19 +2578,12 @@ def _apply_chat_history_probe_to_session(cookie_id: str, session: Dict[str, Any]
     if not chat_id:
         return normalized
 
-    is_candidate_only = str(normalized.get('hydration_source') or '').strip() == 'orders'
-    normalized['candidate_only'] = is_candidate_only
     probe = _get_cached_chat_history_probe(cookie_id, chat_id)
     if probe:
         normalized['remote_history_status'] = probe.get('status')
         normalized['remote_history_checked_at'] = probe.get('checked_at_display')
         normalized['remote_history_note'] = probe.get('note')
         normalized['remote_history_fetched'] = probe.get('fetched', 0)
-    elif is_candidate_only:
-        normalized['remote_history_status'] = 'unknown'
-        normalized['remote_history_checked_at'] = None
-        normalized['remote_history_note'] = '订单候选会话，尚未验证是否存在闲鱼聊天历史'
-        normalized['remote_history_fetched'] = 0
 
     return normalized
 
@@ -3077,12 +3070,11 @@ def _build_chat_sessions_from_recent_orders(cookie_id: str, limit: int = 50) -> 
             'buyer_id': order.get('buyer_id') or '',
             'sender_name': order.get('buyer_nick') or order.get('buyer_id') or chat_id,
             'buyer_name': order.get('buyer_nick') or '',
-            'content': '点击补拉该会话历史消息',
+            'content': '',
             'content_type': 1,
             'item_id': order.get('item_id') or '',
             'direction': 2,
             'created_at': order.get('updated_at') or order.get('created_at') or '',
-            'hydration_source': 'orders',
         })
         if len(sessions) >= limit:
             break
